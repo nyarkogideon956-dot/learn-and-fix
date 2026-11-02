@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learn &amp; Fix</title>
+<meta name="theme-color" content="#1d4ed8">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --blue:#1d4ed8; --blue-soft:#dbeafe; --ink:#111827; --muted:#6b7280;
+    --bg:#f8fafc; --card:#ffffff; --green:#15803d; --green-soft:#dcfce7;
+    --red:#b91c1c; --red-soft:#fee2e2; --amber:#f59e0b; --line:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Lexend",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:18px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+  header{background:var(--blue);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  header h1{font-size:20px;margin:0;font-weight:700}
+  header button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px}
+  main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .muted{color:var(--muted);font-size:15px}
+  .row{display:flex;gap:10px;align-items:center}
+  .big{font-size:26px;font-weight:700}
+  .huge{font-size:40px;font-weight:700;letter-spacing:.5px}
+  button.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font:inherit;font-weight:600;font-size:20px;background:var(--blue);color:#fff;margin-top:10px}
+  button.btn.alt{background:var(--blue-soft);color:var(--blue)}
+  button.btn.green{background:var(--green)}
+  button.btn:disabled{opacity:.45}
+  .opts{display:grid;gap:10px;margin-top:12px}
+  .opt{border:2px solid var(--line);background:#fff;border-radius:14px;padding:16px;font:inherit;font-size:24px;font-weight:600;text-align:center;color:var(--ink)}
+  .opt.right{border-color:var(--green);background:var(--green-soft)}
+  .opt.wrong{border-color:var(--red);background:var(--red-soft)}
+  .speak{background:var(--blue-soft);color:var(--blue);border:0;border-radius:50%;width:56px;height:56px;font-size:26px;flex:none}
+  .wordcard{display:flex;align-items:center;gap:14px;padding:12px;border:1px solid var(--line);border-radius:14px;margin-top:10px;background:#fff;width:100%;font:inherit;text-align:left;color:var(--ink)}
+  .wordcard .emoji{font-size:34px;width:44px;text-align:center}
+  .wordcard .w{font-size:30px;font-weight:700}
+  .day{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:10px;width:100%;font:inherit;text-align:left;color:var(--ink)}
+  .day .num{width:44px;height:44px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:700;flex:none}
+  .day.done .num{background:var(--green-soft);color:var(--green)}
+  .day.locked{opacity:.5}
+  .day .t{flex:1}
+  .stars{font-size:22px;letter-spacing:2px}
+  .progress{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
+  .progress > div{height:100%;background:var(--green);width:0}
+  .steps{display:flex;gap:4px;margin-bottom:14px}
+  .steps span{flex:1;height:6px;border-radius:4px;background:var(--line)}
+  .steps span.on{background:var(--blue)}
+  .sentence{font-size:30px;font-weight:600;line-height:1.6;margin:8px 0}
+  .sentence .wd{padding:2px 3px;border-radius:6px}
+  .sentence .wd.hl{background:#fde68a}
+  .video{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000;margin-top:10px}
+  .video iframe,.video video{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .feedback{font-weight:600;margin-top:10px;min-height:28px}
+  .feedback.ok{color:var(--green)} .feedback.no{color:var(--red)}
+  input[type=text]{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:12px}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}
+  .pill{display:inline-block;background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:2px 10px;font-size:14px;font-weight:600}
+  .center{text-align:center}
+  .hidden{display:none}
+  .timer{font-size:15px;color:#fff;opacity:.9}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hdrTitle">Learn &amp; Fix</h1>
+  <div class="row">
+    <span class="timer hidden" id="timer"></span>
+    <button id="hdrBtn">Progress</button>
+  </div>
+</header>
+<main id="app"></main>
+
+<script>
+/* =========================================================
+   LESSONS — WEEK 1
+   To add more weeks later, add more objects to DAYS.
+   video: {id:"YouTubeID"} plays inside the app,
+          {search:"words"} opens a YouTube search.
+   ========================================================= */
+const DAYS = [
+  {
+    title: "Tools",
+    words: [
+      {w:"tool", e:"🧰"}, {w:"nut", e:"🔩"}, {w:"bolt", e:"🔩"}, {w:"box", e:"📦"}
+    ],
+    pick: [
+      {say:"nut",  opts:["nut","not","net"]},
+      {say:"bolt", opts:["boat","bolt","belt"]},
+      {say:"tool", opts:["tall","tool","toll"]}
+    ],
+    sentence: "I have a spanner. It is in the box.",
+    extra: "I use it to turn a nut.",
+    question: {q:"Where is the spanner?", opts:["In the box","In the car","On the tyre"], a:0},
+    math: [
+      {q:"You have 4 nuts. Your master gives you 3 more. How many nuts now?", opts:["6","7","8"], a:1},
+      {q:"A box has 10 bolts. You use 2. How many are left?", opts:["8","12","7"], a:0},
+      {q:"One spanner costs 5 cedis. How much for 2 spanners?", opts:["7 cedis","10 cedis","12 cedis"], a:1},
+      {q:"You have 6 bolts. You put them in 2 equal groups. How many in each group?", opts:["2","4","3"], a:2}
+    ],
+    video: {search:"ChrisFix basic tools every beginner needs", title:"Basic tools for beginners"},
+    videoQ: {q:"What do we use to turn a nut?", opts:["A spanner","A brush","A cup"], a:0},
+    task: "At the workshop today, find a spanner and a screwdriver. Say their names out loud to your master."
+  },
+  {
+    title: "Engine oil",
+    words: [
+      {w:"oil", e:"🛢️"}, {w:"car", e:"🚗"}, {w:"hot", e:"🔥"}, {w:"fill", e:"⛽"}
+    ],
+    pick: [
+      {say:"oil",  opts:["all","oil","owl"]},
+      {say:"hot",  opts:["hat","hut","hot"]},
+      {say:"fill", opts:["fill","full","fell"]}
+    ],
+    sentence: "The car needs oil. Do not touch it when it is hot.",
+    extra: "Check the oil with the dipstick.",
+    question: {q:"When should you NOT touch the engine?", opts:["When it is cold","When it is hot","In the morning"], a:1},
+    math: [
+      {q:"The engine needs 4 litres of oil. You pour 1 litre. How many more litres?", opts:["3","5","2"], a:0},
+      {q:"One litre of oil costs 50 cedis. How much for 2 litres?", opts:["70 cedis","100 cedis","52 cedis"], a:1},
+      {q:"You changed oil for 3 cars on Monday and 2 cars on Tuesday. How many cars?", opts:["4","6","5"], a:2},
+      {q:"A customer pays 100 cedis. The oil change costs 80 cedis. How much change?", opts:["20 cedis","30 cedis","10 cedis"], a:0}
+    ],
+    video: {id:"O1hF25Cowv8", title:"How to change your oil (ChrisFix)"},
+    videoQ: {q:"Why do we change engine oil?", opts:["To make the car clean outside","To keep the engine healthy","To make the horn loud"], a:1},
+    task: "Ask your master to show you where to check the oil in a car. Look at the dipstick."
+  },
+  {
+    title: "Tyres",
+    words: [
+      {w:"tyre", e:"🛞"}, {w:"air", e:"💨"}, {w:"flat", e:"⬇️"}, {w:"jack", e:"🔧"}
+    ],
+    pick: [
+      {say:"tyre", opts:["tyre","tree","tired"]},
+      {say:"flat", opts:["flag","flat","float"]},
+      {say:"jack", opts:["jacket","back","jack"]}
+    ],
+    sentence: "The tyre is flat. We need to pump air.",
+    extra: "Use the jack to lift the car.",
+    question: {q:"What is wrong with the tyre?", opts:["It is new","It is flat","It is red"], a:1},
+    math: [
+      {q:"A car has 4 tyres. How many tyres do 2 cars have?", opts:["6","8","10"], a:1},
+      {q:"A wheel has 5 nuts. You took off 2. How many are still on?", opts:["3","4","2"], a:0},
+      {q:"One tyre costs 300 cedis. How much for 2 tyres?", opts:["500 cedis","600 cedis","900 cedis"], a:1},
+      {q:"You fixed 2 flat tyres in the morning and 3 in the afternoon. How many in all?", opts:["5","6","4"], a:0}
+    ],
+    video: {search:"ChrisFix how to check your tires", title:"How to check your tyres"},
+    videoQ: {q:"What do we use to lift the car?", opts:["A spoon","A jack","A rope"], a:1},
+    task: "Look at 2 tyres at the workshop. Is the tyre good, or is it flat? Tell your master."
+  },
+  {
+    title: "Battery",
+    words: [
+      {w:"battery", e:"🔋"}, {w:"red", e:"🔴"}, {w:"black", e:"⚫"}, {w:"start", e:"🔑"}
+    ],
+    pick: [
+      {say:"red",   opts:["read","red","rod"]},
+      {say:"black", opts:["block","back","black"]},
+      {say:"start", opts:["star","start","stand"]}
+    ],
+    sentence: "The battery is dead. The car will not start.",
+    extra: "Red is plus. Black is minus.",
+    question: {q:"Why will the car not start?", opts:["The battery is dead","The tyre is flat","The door is open"], a:0},
+    math: [
+      {q:"A car battery is 12 volts. Two batteries are how many volts together?", opts:["14","20","24"], a:2},
+      {q:"You have 10 cedis. A battery clip costs 4 cedis. How much is left?", opts:["6 cedis","5 cedis","14 cedis"], a:0},
+      {q:"3 cars came with dead batteries today. 2 came yesterday. How many cars?", opts:["4","5","6"], a:1},
+      {q:"One battery costs 400 cedis. How much for 2?", opts:["600 cedis","800 cedis","402 cedis"], a:1}
+    ],
+    video: {search:"ChrisFix how to properly jump start a car", title:"How to jump start a car"},
+    videoQ: {q:"Which colour cable is plus (+)?", opts:["Black","Red","Green"], a:1},
+    task: "Ask your master to show you a car battery. Find the red (+) side and the black (-) side. Do not touch the metal."
+  },
+  {
+    title: "Brakes",
+    words: [
+      {w:"brake", e:"🛑"}, {w:"pad", e:"🟫"}, {w:"stop", e:"✋"}, {w:"wheel", e:"🛞"}
+    ],
+    pick: [
+      {say:"brake", opts:["break","brake","bake"]},
+      {say:"stop",  opts:["step","shop","stop"]},
+      {say:"wheel", opts:["wheel","well","while"]}
+    ],
+    sentence: "The brake helps the car stop. Old pads make a noise.",
+    extra: "We change the pads on both wheels.",
+    question: {q:"What helps the car stop?", opts:["The horn","The brake","The light"], a:1},
+    math: [
+      {q:"One wheel needs 2 brake pads. How many pads for 2 wheels?", opts:["4","3","6"], a:0},
+      {q:"A set of pads costs 150 cedis. The customer pays 200 cedis. How much change?", opts:["50 cedis","150 cedis","100 cedis"], a:0},
+      {q:"You worked on brakes for 2 hours in the morning and 1 hour after. How many hours?", opts:["2","4","3"], a:2},
+      {q:"You have 8 brake pads. Each car needs 4. How many cars can you do?", opts:["2","4","3"], a:0}
+    ],
+    video: {id:"UlbFFq60Tec", title:"How to replace front brakes (ChrisFix)"},
+    videoQ: {q:"Old brake pads can make what?", opts:["A noise","Music","Smoke from the tyre"], a:0},
+    task: "Ask your master to show you brake pads. Look at a new pad and an old pad. Which one is thin?"
+  },
+  {
+    title: "Fluids",
+    words: [
+      {w:"water", e:"💧"}, {w:"cool", e:"❄️"}, {w:"level", e:"📏"}, {w:"leak", e:"💦"}
+    ],
+    pick: [
+      {say:"water", opts:["waiter","water","winter"]},
+      {say:"cool",  opts:["cool","coal","call"]},
+      {say:"leak",  opts:["lake","look","leak"]}
+    ],
+    sentence: "Check the water level. The engine must stay cool.",
+    extra: "A leak means fluid is coming out.",
+    question: {q:"What must the engine stay?", opts:["Hot","Cool","Wet"], a:1},
+    math: [
+      {q:"The tank has 2 litres. It needs 5 litres. How many more?", opts:["3","7","2"], a:0},
+      {q:"You checked 4 cars. Each car has 3 fluids to check. How many checks?", opts:["7","12","10"], a:1},
+      {q:"Coolant costs 40 cedis. Brake fluid costs 30 cedis. Both together?", opts:["70 cedis","60 cedis","80 cedis"], a:0},
+      {q:"You have 9 litres. You use 4 litres. How many are left?", opts:["4","5","6"], a:1}
+    ],
+    video: {search:"ChrisFix how to change every fluid in your car", title:"Every fluid in your car"},
+    videoQ: {q:"What does a leak mean?", opts:["Fluid is coming out","The car is new","The tyre is good"], a:0},
+    task: "Look under a car at the workshop. Can you see any leak on the ground? Tell your master what you see."
+  },
+  {
+    title: "Review",
+    words: [
+      {w:"engine", e:"⚙️"}, {w:"fix", e:"🛠️"}, {w:"safe", e:"🦺"}, {w:"check", e:"✅"}
+    ],
+    pick: [
+      {say:"engine", opts:["engine","angel","enjoy"]},
+      {say:"safe",   opts:["save","safe","same"]},
+      {say:"check",  opts:["chick","cheek","check"]}
+    ],
+    sentence: "I check the oil, the tyres and the brakes. I work safe.",
+    extra: "Every day I learn to fix more cars.",
+    question: {q:"What three things do you check?", opts:["Oil, tyres and brakes","Radio, seats and doors","Lights, mirror and horn"], a:0},
+    math: [
+      {q:"You did 1 lesson each day for 7 days. How many lessons?", opts:["6","7","8"], a:1},
+      {q:"An oil change is 80 cedis. A tyre fix is 20 cedis. Both together?", opts:["100 cedis","90 cedis","60 cedis"], a:0},
+      {q:"A car has 4 wheels and 1 spare. How many tyres?", opts:["4","6","5"], a:2},
+      {q:"You have 50 cedis. You spend 20 cedis on a tool. How much is left?", opts:["30 cedis","70 cedis","20 cedis"], a:0}
+    ],
+    video: {search:"ChrisFix how to maintain your first car", title:"How to look after a car"},
+    videoQ: {q:"What should you always do at work?", opts:["Rush","Work safe","Skip the checks"], a:1},
+    task: "Tell your master one thing you learned this week. Well done for finishing the week!"
+  }
+];
+
+/* ================= STORAGE ================= */
+const KEY = "learnfix_v1";
+function load(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch(e){ return null; }
+}
+let S = load() || {level:1, goodStreak:0, results:{}, unlockAll:false, myLinks:[]};
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+const today = () => new Date().toISOString().slice(0,10);
+
+/* ================= VOICE ================= */
+let voice = null;
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  voice = vs.find(v=>/en-GB/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if ("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(text, onWord, onEnd){
+  if (!("speechSynthesis" in window)) { onEnd && onEnd(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if (voice) u.voice = voice;
+  u.lang = voice ? voice.lang : "en-GB";
+  u.rate = 0.8; u.pitch = 1;
+  if (onWord) u.onboundary = e => { if (e.name === "word" || e.charIndex !== undefined) onWord(e.charIndex); };
+  u.onend = () => onEnd && onEnd();
+  speechSynthesis.speak(u);
+}
+
+/* ================= HELPERS ================= */
+const app = document.getElementById("app");
+const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstChild; };
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+const targetMinutes = () => Math.min(25, 15 + (S.level-1)*2);
+const starsFor = s => s >= .9 ? 3 : s >= .7 ? 2 : 1;
+const praise = ["Well done!","Good job!","Very good!","Yes! That is right!","Great!"];
+const pickPraise = () => praise[Math.floor(Math.random()*praise.length)];
+
+function isUnlocked(i){
+  if (S.unlockAll || i === 0) return true;
+  const prev = S.results[i-1];
+  if (!prev) return false;
+  if (S.results[i]) return true;
+  return prev.date < today();   // one new lesson per day
+}
+function nextDayIndex(){
+  for (let i=0;i<DAYS.length;i++) if (!S.results[i]) return i;
+  return -1;
+}
+
+/* ================= HOME ================= */
+function home(){
+  stopTimer();
+  setHeader("Learn & Fix", "Progress", progressPage);
+  const done = Object.keys(S.results).length;
+  const n = nextDayIndex();
+  app.innerHTML = "";
+  const top = $(`<div class="card">
+      <div class="big">Hello! 👋</div>
+      <div class="muted">One small lesson every day. Reading, numbers and cars.</div>
+      <div style="margin-top:10px" class="row"><span class="pill">⏱ ${targetMinutes()} minutes a day</span><span class="pill">Level ${S.level}</span></div>
+      <div class="progress"><div style="width:${done/DAYS.length*100}%"></div></div>
+      <div class="muted" style="margin-top:4px">${done} of ${DAYS.length} days done this week</div>
+    </div>`);
+  app.appendChild(top);
+
+  if (n >= 0){
+    const can = isUnlocked(n);
+    const b = $(`<button class="btn ${can?'':'alt'}">${can ? "▶ Start today's lesson" : "✔ Come back tomorrow"}</button>`);
+    b.onclick = () => can ? startLesson(n) : say("Good work today. Come back tomorrow for the next lesson.");
+    app.appendChild(b);
+    if (!can) app.appendChild($(`<p class="muted center">Today's lesson is finished. The next one opens tomorrow.</p>`));
+  } else {
+    app.appendChild($(`<div class="card center"><div class="huge">🏆</div><div class="big">Week finished!</div><div class="muted">You can practise any day again below.</div></div>`));
+  }
+
+  const list = $(`<div class="card"><div class="big" style="font-size:20px">This week</div></div>`);
+  DAYS.forEach((d,i)=>{
+    const r = S.results[i]; const un = isUnlocked(i);
+    const el = $(`<button class="day ${r?'done':''} ${un?'':'locked'}">
+        <div class="num">${r ? "✓" : i+1}</div>
+        <div class="t"><div style="font-weight:600">Day ${i+1}: ${esc(d.title)}</div>
+        <div class="muted">${r ? "Practise again" : un ? "Ready" : "Locked"}</div></div>
+        <div class="stars">${r ? "⭐".repeat(starsFor(r.score)) : ""}</div></button>`);
+    el.onclick = () => un ? startLesson(i) : say("This lesson opens later. Finish the one before it first.");
+    list.appendChild(el);
+  });
+  app.appendChild(list);
+
+  const vids = $(`<button class="btn alt">🎬 My workshop videos</button>`);
+  vids.onclick = videosPage;
+  app.appendChild(vids);
+}
+
+/* ================= LESSON ================= */
+let L = null; // current lesson state
+let timerInt = null;
+function startTimer(){
+  const el = document.getElementById("timer"); el.classList.remove("hidden");
+  timerInt = setInterval(()=>{
+    const s = Math.floor((Date.now()-L.start)/1000);
+    el.textContent = `⏱ ${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+  },1000);
+}
+function stopTimer(){ clearInterval(timerInt); document.getElementById("timer").classList.add("hidden"); if("speechSynthesis" in window) speechSynthesis.cancel(); }
+
+function startLesson(i){
+  const d = DAYS[i];
+  const steps = [];
+  steps.push(()=>stepIntro(d,i));
+  steps.push(()=>stepWords(d));
+  d.pick.forEach(p=>steps.push(()=>stepPick(p)));
+  steps.push(()=>stepSentence(d));
+  steps.push(()=>stepChoice("Read and answer", d.question, d.sentence + (S.level>=2 ? " " + d.extra : "")));
+  steps.push(()=>stepMathIntro());
+  const mathCount = S.level >= 2 ? 4 : 3;
+  d.math.slice(0,mathCount).forEach(m=>steps.push(()=>stepChoice("Numbers", m)));
+  steps.push(()=>stepVideo(d));
+  steps.push(()=>stepChoice("About the video", d.videoQ));
+  steps.push(()=>stepTask(d));
+  L = {day:i, steps, idx:0, right:0, total:0, start:Date.now()};
+  setHeader(`Day ${i+1}: ${d.title}`, "✕ Stop", ()=>{ if(confirm("Stop the lesson? Your answers today will not be saved.")) home(); });
+  startTimer();
+  render();
+}
+function render(){
+  app.innerHTML = "";
+  const bar = $(`<div class="steps">${L.steps.map((_,k)=>`<span class="${k<=L.idx?'on':''}"></span>`).join("")}</div>`);
+  app.appendChild(bar);
+  L.steps[L.idx]();
+}
+function next(){ L.idx++; if (L.idx >= L.steps.length) finish(); else render(); }
+function nextBtn(label="Next ➜", enabled=true){
+  const b = $(`<button class="btn" ${enabled?'':'disabled'}>${label}</button>`);
+  b.onclick = next; return b;
+}
+
+function stepIntro(d,i){
+  const c = $(`<div class="card center">
+     <div class="huge">${d.words[0].e}</div>
+     <div class="big">Day ${i+1}: ${esc(d.title)}</div>
+     <p class="muted">Today: 4 new words, one short reading, a few sums, and a car video.<br>About ${targetMinutes()} minutes.</p>
+   </div>`);
+  app.appendChild(c);
+  const b = nextBtn("Let's start ➜");
+  app.appendChild(b);
+  say(`Hello. Welcome to day ${i+1}. Today we learn about ${d.title}. Tap the blue button to start.`);
+}
+
+function stepWords(d){
+  const c = $(`<div class="card"><div class="big" style="font-size:22px">New words</div>
+     <div class="muted">Tap each word. Listen. Then say it out loud.</div></div>`);
+  const heard = new Set();
+  const nb = nextBtn("Next ➜", false);
+  d.words.forEach(w=>{
+    const el = $(`<button class="wordcard"><span class="emoji">${w.e}</span><span class="w">${esc(w.w)}</span><span style="margin-left:auto;font-size:26px">🔊</span></button>`);
+    el.onclick = ()=>{
+      say(`${w.w}. ... ${w.w.split("").join(" ")}. ... ${w.w}.`);
+      heard.add(w.w); el.style.borderColor = "var(--green)";
+      if (heard.size === d.words.length) nb.disabled = false;
+    };
+    c.appendChild(el);
+  });
+  app.appendChild(c); app.appendChild(nb);
+  say("Here are your new words. Tap each word to hear it. Then say it out loud.");
+}
+
+function stepPick(p){
+  const c = $(`<div class="card center">
+     <div class="big" style="font-size:22px">Listen and tap the word</div>
+     <button class="speak" style="margin:12px auto;display:block">🔊</button>
+     <div class="opts"></div><div class="feedback"></div></div>`);
+  c.querySelector(".speak").onclick = ()=>say(p.say);
+  addOptions(c, shuffle(p.opts), o => o === p.say, p.say);
+  app.appendChild(c);
+  say(`Listen. Tap the word: ${p.say}`);
+}
+
+function stepSentence(d){
+  const text = d.sentence + (S.level>=2 ? " " + d.extra : "");
+  const words = text.split(" ");
+  const c = $(`<div class="card">
+     <div class="big" style="font-size:22px">Read this</div>
+     <div class="muted">First listen. Then read it out loud yourself.</div>
+     <div class="sentence">${words.map((w,k)=>`<span class="wd" data-k="${k}">${esc(w)}</span>`).join(" ")}</div>
+     <button class="btn alt">🔊 Listen</button>
+     <button class="btn alt">🐢 Listen slowly, word by word</button>
+   </div>`);
+  const spans = [...c.querySelectorAll(".wd")];
+  // map char index -> word index
+  const starts = []; let pos = 0; words.forEach(w=>{ starts.push(pos); pos += w.length+1; });
+  const clear = ()=>spans.forEach(s=>s.classList.remove("hl"));
+  const [listen, slow] = c.querySelectorAll("button.btn");
+  listen.onclick = ()=>{
+    clear();
+    say(text, ci=>{ let k = 0; for (let j=0;j<starts.length;j++) if (starts[j] <= ci) k = j; clear(); spans[k] && spans[k].classList.add("hl"); }, clear);
+  };
+  slow.onclick = ()=>{
+    let k = 0;
+    const step = ()=>{ clear(); if (k >= words.length || !c.isConnected) return; spans[k].classList.add("hl"); say(words[k].replace(/[.,!?]/g,""), null, ()=>{ k++; setTimeout(step, 350); }); };
+    step();
+  };
+  spans.forEach((s,k)=> s.onclick = ()=>{ clear(); s.classList.add("hl"); say(words[k].replace(/[.,!?]/g,"")); });
+  app.appendChild(c);
+  app.appendChild(nextBtn("✔ I read it out loud"));
+  setTimeout(()=>listen.click(), 300);
+}
+
+function stepMathIntro(){
+  app.appendChild($(`<div class="card center"><div class="huge">🔢</div><div class="big">Numbers time</div><p class="muted">Workshop sums. Take your time. You can tap 🔊 to hear the question.</p></div>`));
+  app.appendChild(nextBtn("Start ➜"));
+  say("Now, numbers time. These are sums from the workshop. Take your time.");
+}
+
+function stepChoice(title, item, readText){
+  const c = $(`<div class="card">
+     <div class="muted">${esc(title)}</div>
+     ${readText ? `<div class="sentence" style="font-size:22px">${esc(readText)}</div>` : ""}
+     <div class="row" style="align-items:flex-start">
+       <div style="flex:1;font-size:22px;font-weight:600">${esc(item.q)}</div>
+       <button class="speak">🔊</button>
+     </div>
+     <div class="opts"></div><div class="feedback"></div></div>`);
+  c.querySelector(".speak").onclick = ()=>say(item.q + " ... " + item.opts.join(". or. "));
+  const right = item.opts[item.a];
+  addOptions(c, item.opts, o => o === right, null, true);
+  app.appendChild(c);
+  say(item.q);
+}
+
+function addOptions(card, opts, isRight, sayOnTap, small){
+  const box = card.querySelector(".opts"); const fb = card.querySelector(".feedback");
+  let first = true, finished = false;
+  opts.forEach(o=>{
+    const b = $(`<button class="opt" ${small?'style="font-size:20px"':''}>${esc(o)}</button>`);
+    b.onclick = ()=>{
+      if (finished) return;
+      if (isRight(o)){
+        finished = true; b.classList.add("right");
+        if (first) L.right++; L.total++;
+        fb.className = "feedback ok"; const p = pickPraise(); fb.textContent = "✔ " + p;
+        let moved = false;
+        const go = ()=>{ if (moved || !card.isConnected) return; moved = true; next(); };
+        say(p, null, ()=>setTimeout(go, 400));
+        setTimeout(go, 3500);
+      } else {
+        if (first) { first = false; }
+        b.classList.add("wrong");
+        fb.className = "feedback no"; fb.textContent = "Not yet. Try again.";
+        say("Not yet. Try again." + (sayOnTap ? " Listen. " + sayOnTap : ""));
+      }
+    };
+    box.appendChild(b);
+  });
+}
+
+function ytEmbed(id){ return `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`; }
+
+function stepVideo(d){
+  const v = d.video;
+  const c = $(`<div class="card"><div class="big" style="font-size:22px">🎬 Car video</div>
+     <div class="muted">${esc(v.title)}. Watch at least 5 minutes. Needs internet.</div></div>`);
+  if (v.id){
+    c.appendChild($(ytEmbed(v.id)));
+  } else {
+    const a = $(`<button class="btn">▶ Open video on YouTube</button>`);
+    a.onclick = ()=>window.open("https://www.youtube.com/results?search_query=" + encodeURIComponent(v.search), "_blank");
+    c.appendChild(a);
+    c.appendChild($(`<p class="muted">Pick the first ChrisFix video. Watch it, then come back here.</p>`));
+  }
+  const mine = $(`<button class="btn alt">📁 Watch a workshop clip instead (no data)</button>`);
+  mine.onclick = ()=>videosPage(true);
+  c.appendChild(mine);
+  app.appendChild(c);
+  app.appendChild(nextBtn("✔ I watched it"));
+  say("Now watch a video about cars. When you finish, tap I watched it.");
+}
+
+function stepTask(d){
+  app.appendChild($(`<div class="card"><div class="big" style="font-size:22px">📝 Today's task</div>
+     <div class="sentence" style="font-size:22px">${esc(d.task)}</div>
+     <button class="btn alt">🔊 Listen</button></div>`));
+  app.querySelector(".card .btn.alt").onclick = ()=>say(d.task);
+  app.appendChild(nextBtn("✔ Finish lesson"));
+  say("Here is your task for today. " + d.task);
+}
+
+function finish(){
+  stopTimer();
+  const score = L.total ? L.right / L.total : 1;
+  const mins = Math.max(1, Math.round((Date.now()-L.start)/60000));
+  const firstTime = !S.results[L.day];
+  const prev = S.results[L.day];
+  S.results[L.day] = {
+    score: prev ? Math.max(prev.score, score) : score,
+    date: prev ? prev.date : today(),
+    minutes: (prev ? prev.minutes : 0) + mins,
+    tries: (prev ? prev.tries : 0) + 1
+  };
+  let levelMsg = "";
+  if (firstTime){
+    if (score >= .8){
+      S.goodStreak++;
+      if (S.goodStreak >= 2 && S.level < 6){ S.level++; S.goodStreak = 0; levelMsg = "You are doing very well. Next time the lesson will be a little longer."; }
+    } else {
+      S.goodStreak = 0;
+      if (score < .5 && S.level > 1){ S.level--; levelMsg = "Next time we will go a little slower. That is okay."; }
+    }
+  }
+  save();
+  const st = starsFor(score);
+  setHeader("Lesson done", "Home", home);
+  app.innerHTML = "";
+  app.appendChild($(`<div class="card center">
+      <div class="huge">${"⭐".repeat(st)}</div>
+      <div class="big">Lesson finished!</div>
+      <p>${L.right} of ${L.total} right first time · ${mins} min</p>
+      ${levelMsg ? `<p class="pill" style="font-size:15px">${esc(levelMsg)}</p>` : ""}
+    </div>`));
+  const b = $(`<button class="btn green">🏠 Home</button>`); b.onclick = home; app.appendChild(b);
+  say(`Well done! You finished today's lesson. You got ${L.right} out of ${L.total}. ${levelMsg} See you tomorrow.`);
+}
+
+/* ================= PROGRESS (for Gideon) ================= */
+function progressPage(){
+  stopTimer();
+  setHeader("Progress", "Home", home);
+  const rows = DAYS.map((d,i)=>{
+    const r = S.results[i];
+    return `<tr><td>Day ${i+1} ${esc(d.title)}</td><td>${r ? Math.round(r.score*100)+"%" : "–"}</td><td>${r ? r.minutes+" min" : "–"}</td><td>${r ? r.date : "–"}</td></tr>`;
+  }).join("");
+  const total = Object.values(S.results).reduce((a,r)=>a+r.minutes,0);
+  app.innerHTML = "";
+  app.appendChild($(`<div class="card">
+     <div class="big" style="font-size:22px">How he is doing</div>
+     <div class="row" style="margin:8px 0"><span class="pill">Level ${S.level}</span><span class="pill">${targetMinutes()} min/day</span><span class="pill">${total} min total</span></div>
+     <table><tr><th>Lesson</th><th>Score</th><th>Time</th><th>Date</th></tr>${rows}</table>
+     <p class="muted">Level goes up after 2 good days in a row (80% or more): a longer reading and one extra sum. It goes down if he scores under 50%.</p>
+   </div>`));
+  const set = $(`<div class="card"><div style="font-weight:600">Settings</div>
+     <label class="row" style="margin-top:8px"><input type="checkbox" ${S.unlockAll?'checked':''}> Open all days (for testing)</label>
+     <button class="btn alt">Reset all progress</button></div>`);
+  set.querySelector("input").onchange = e=>{ S.unlockAll = e.target.checked; save(); };
+  set.querySelector("button").onclick = ()=>{ if(confirm("Delete all progress and start again?")){ S = {level:1,goodStreak:0,results:{},unlockAll:false,myLinks:S.myLinks||[]}; save(); home(); } };
+  app.appendChild(set);
+}
+
+/* ================= MY VIDEOS ================= */
+const DB_NAME = "learnfix_videos";
+function db(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded = ()=>r.result.createObjectStore("clips",{keyPath:"id",autoIncrement:true});
+    r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error);
+  });
+}
+async function clipsAll(){ const d = await db(); return new Promise(res=>{ const q = d.transaction("clips").objectStore("clips").getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>res([]); }); }
+async function clipAdd(name, blob){ const d = await db(); return new Promise(res=>{ const t = d.transaction("clips","readwrite"); t.objectStore("clips").add({name, blob, added:today()}); t.oncomplete=res; }); }
+async function clipDel(id){ const d = await db(); return new Promise(res=>{ const t = d.transaction("clips","readwrite"); t.objectStore("clips").delete(id); t.oncomplete=res; }); }
+function ytId(url){ const m = String(url).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/); return m ? m[1] : null; }
+
+async function videosPage(fromLesson){
+  const back = fromLesson && L ? ()=>render() : home;
+  if (!fromLesson) stopTimer();
+  setHeader("Workshop videos", fromLesson ? "Back" : "Home", back);
+  app.innerHTML = "";
+  const player = $(`<div></div>`); app.appendChild(player);
+
+  const add = $(`<div class="card"><div style="font-weight:600">Add a video</div>
+     <p class="muted">Record a short clip at the workshop with the phone camera, then add it here. It plays without data.</p>
+     <input type="file" accept="video/*" class="hidden">
+     <button class="btn alt">📁 Add a clip from this phone</button>
+     <p class="muted" style="margin-top:14px">Or paste a YouTube link (needs data to play):</p>
+     <input type="text" placeholder="https://youtu.be/...">
+     <button class="btn alt">➕ Save link</button></div>`);
+  const [file] = add.querySelectorAll('input[type=file]');
+  const [txt] = add.querySelectorAll('input[type=text]');
+  const [bFile, bLink] = add.querySelectorAll("button");
+  bFile.onclick = ()=>file.click();
+  file.onchange = async ()=>{
+    const f = file.files[0]; if (!f) return;
+    const name = prompt("Name for this clip:", f.name.replace(/\.[^.]+$/,"")) || f.name;
+    try { await clipAdd(name, f); videosPage(fromLesson); } catch(e){ alert("Could not save the clip. The phone may be full."); }
+  };
+  bLink.onclick = ()=>{
+    const id = ytId(txt.value); if (!id){ alert("That does not look like a YouTube link."); return; }
+    const name = prompt("Name for this video:", "Workshop video") || "Video";
+    S.myLinks = S.myLinks || []; S.myLinks.push({id, name}); save(); videosPage(fromLesson);
+  };
+
+  const list = $(`<div class="card"><div style="font-weight:600">Saved videos</div></div>`);
+  const clips = await clipsAll().catch(()=>[]);
+  const links = S.myLinks || [];
+  if (!clips.length && !links.length) list.appendChild($(`<p class="muted">No videos yet.</p>`));
+  clips.forEach(c=>{
+    const el = $(`<div class="day"><div class="num">📁</div><div class="t"><div style="font-weight:600">${esc(c.name)}</div><div class="muted">On this phone · no data needed</div></div><button class="opt" style="font-size:14px;padding:8px">Delete</button></div>`);
+    el.querySelector(".t").onclick = ()=>{
+      const url = URL.createObjectURL(c.blob);
+      player.innerHTML = `<div class="card"><div style="font-weight:600">${esc(c.name)}</div><div class="video"><video src="${url}" controls playsinline autoplay></video></div></div>`;
+      window.scrollTo(0,0);
+    };
+    el.querySelector("button").onclick = async ()=>{ if(confirm("Delete this clip?")){ await clipDel(c.id); videosPage(fromLesson); } };
+    list.appendChild(el);
+  });
+  links.forEach((v,k)=>{
+    const el = $(`<div class="day"><div class="num">▶</div><div class="t"><div style="font-weight:600">${esc(v.name)}</div><div class="muted">YouTube · needs data</div></div><button class="opt" style="font-size:14px;padding:8px">Delete</button></div>`);
+    el.querySelector(".t").onclick = ()=>{ player.innerHTML = `<div class="card"><div style="font-weight:600">${esc(v.name)}</div>${ytEmbed(v.id)}</div>`; window.scrollTo(0,0); };
+    el.querySelector("button").onclick = ()=>{ if(confirm("Delete this link?")){ S.myLinks.splice(k,1); save(); videosPage(fromLesson); } };
+    list.appendChild(el);
+  });
+  app.appendChild(list);
+  app.appendChild(add);
+}
+
+/* ================= HEADER ================= */
+function setHeader(title, btnText, fn){
+  document.getElementById("hdrTitle").textContent = title;
+  const b = document.getElementById("hdrBtn"); b.textContent = btnText; b.onclick = fn;
+}
+
+/* ================= START ================= */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+home();
+</script>
+</body>
+</html>
